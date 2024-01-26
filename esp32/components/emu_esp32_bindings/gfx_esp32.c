@@ -19,15 +19,16 @@
 #include "esp_timer.h"
 #include "cpu_addr_space.h"
 
-#define BTN_LEFT 15
-#define BTN_START 14
-#define BTN_PLUNGER 13
-#define BTN_RIGHT 12
+#define BTN_LEFT 39
+#define BTN_START 32
+#define BTN_PLUNGER 33
+#define BTN_RIGHT 27
 
 void gfx_init() {
 	lcd_init();
+	
 	gpio_config_t bconfig={
-		.pin_bit_mask=(1<<BTN_LEFT)|(1<<BTN_START)|(1<<BTN_PLUNGER)|(1<<BTN_RIGHT),
+		.pin_bit_mask=(1ULL << BTN_LEFT)|(1ULL << BTN_START)|(1ULL << BTN_PLUNGER)|(1ULL << BTN_RIGHT),
 		.mode=GPIO_MODE_DEF_INPUT,
 		.pull_up_en=GPIO_PULLUP_ENABLE,
 	};

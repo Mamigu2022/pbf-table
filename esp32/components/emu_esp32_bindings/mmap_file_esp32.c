@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <strings.h>
 #include <esp_partition.h>
+#include <spi_flash_mmap.h>
 
 //We map DOS files to partitions. This table contains both the mapping
 //as well as the size of the files.
@@ -33,7 +34,7 @@ const file_t available_files[NO_FILES]={
 	{"TABLE3.MOD", 124, 3, 219668},
 	{"TABLE4.MOD", 124, 4, 216418},
 	{"INTRO.MOD", 124, 5, 252870},
-	{"table-screens.bin", 125, 1, 1114112},
+	{"table-screens.bin", 125, 1, 1052672},
 };
 
 typedef struct {

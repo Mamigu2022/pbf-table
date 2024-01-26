@@ -20,14 +20,14 @@
 
 #define LCD_HOST	HSPI_HOST
 
-#define PIN_NUM_MISO 25
+#define PIN_NUM_MISO -1
 #define PIN_NUM_MOSI 23
-#define PIN_NUM_CLK	 19
-#define PIN_NUM_CS	 22
+#define PIN_NUM_CLK	 18
+#define PIN_NUM_CS	 5
 
 #define PIN_NUM_DC	 21
-#define PIN_NUM_RST	 18
-#define PIN_NUM_BCKL 5
+#define PIN_NUM_RST	 -1
+#define PIN_NUM_BCKL 14
 
 //To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
 //but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
@@ -51,6 +51,7 @@ typedef enum {
 //Place data into DRAM. Constant data gets placed into DROM by default, which is not accessible by DMA.
 DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[]={
 	/* Memory Data Access Control, MX=MV=1, MY=ML=MH=0, RGB=0 */
+	{0x01, {0} ,0x80},
 	{0x36, {(1<<5)|(1<<6)}, 1},
 	/* Interface Pixel Format, 16bits/pixel for RGB/MCU interface */
 	{0x3A, {0x55}, 1},
@@ -73,9 +74,9 @@ DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[]={
 	/* Power Control 1, AVDD=6.8V, AVCL=-4.8V, VDDS=2.3V */
 	{0xD0, {0xA4, 0xA1}, 1},
 	/* Positive Voltage Gamma Control */
-	{0xE0, {0xD0, 0x00, 0x05, 0x0E, 0x15, 0x0D, 0x37, 0x43, 0x47, 0x09, 0x15, 0x12, 0x16, 0x19}, 14},
+	{0xE0, {0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09}, 14},
 	/* Negative Voltage Gamma Control */
-	{0xE1, {0xD0, 0x00, 0x05, 0x0D, 0x0C, 0x06, 0x2D, 0x44, 0x40, 0x0E, 0x1C, 0x18, 0x16, 0x19}, 14},
+	{0xE1, {0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36}, 14},
 	/* Sleep Out */
 	{0x11, {0}, 0x80},
 	/* Display On */
@@ -85,11 +86,12 @@ DRAM_ATTR static const lcd_init_cmd_t st_init_cmds[]={
 
 DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
 	/* Power contorl B, power control = 0, DC_ENA = 1 */
-	{0xCF, {0x00, 0x83, 0X30}, 3},
+	{0x01, {0} ,0x80},
+	{0xCF, {0x00, 0xC3, 0X30}, 3},
 	/* Power on sequence control,
 	 * cp1 keeps 1 frame, 1st frame enable
 	 * vcl = 0, ddvdh=3, vgh=1, vgl=2
-	 * DDVDH_ENH=1
+	 * DDVDH_ENH=1 
 	 */
 	{0xED, {0x64, 0x03, 0X12, 0X81}, 4},
 	/* Driver timing control A,
@@ -97,7 +99,7 @@ DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
 	 * EQ=default - 1, CR=default
 	 * pre-charge=default - 1
 	 */
-	{0xE8, {0x85, 0x01, 0x79}, 3},
+	{0xE8, {0x85, 0x00, 0x78}, 3},
 	/* Power control A, Vcore=1.6V, DDVDH=5.6V */
 	{0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5},
 	/* Pump ratio control, DDVDH=2xVCl */
@@ -105,38 +107,39 @@ DRAM_ATTR static const lcd_init_cmd_t ili_init_cmds[]={
 	/* Driver timing control, all=0 unit */
 	{0xEA, {0x00, 0x00}, 2},
 	/* Power control 1, GVDD=4.75V */
-	{0xC0, {0x26}, 1},
+	{0xC0, {0x1B}, 1},
 	/* Power control 2, DDVDH=VCl*2, VGH=VCl*7, VGL=-VCl*3 */
-	{0xC1, {0x11}, 1},
+	{0xC1, {0x12}, 1},
 	/* VCOM control 1, VCOMH=4.025V, VCOML=-0.950V */
-	{0xC5, {0x35, 0x3E}, 2},
+	{0xC5, {0x31, 0x3C}, 2},
 	/* VCOM control 2, VCOMH=VMH-2, VCOML=VML-2 */
-	{0xC7, {0xBE}, 1},
+	{0xC7, {0x86}, 1},
 	/* Memory access contorl, MX=MY=0, MV=1, ML=0, BGR=1, MH=0 */
-	{0x36, {0x28}, 1},
+	{0x36, {(0x68|0x80)}, 1},
 	/* Pixel format, 16bits/pixel for RGB/MCU interface */
 	{0x3A, {0x55}, 1},
 	/* Frame rate control, f=fosc, 70Hz fps */
-	{0xB1, {0x00, 0x1B}, 2},
+	{0xB1, {0x00, 0x18}, 2},
 	/* Enable 3G, disabled */
-	{0xF2, {0x08}, 1},
+	{0xF2, {0x00}, 1},
 	/* Gamma set, curve 1 */
 	{0x26, {0x01}, 1},
 	/* Positive gamma correction */
-	{0xE0, {0x1F, 0x1A, 0x18, 0x0A, 0x0F, 0x06, 0x45, 0X87, 0x32, 0x0A, 0x07, 0x02, 0x07, 0x05, 0x00}, 15},
+	{0xE0, {0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00}, 15},
 	/* Negative gamma correction */
-	{0XE1, {0x00, 0x25, 0x27, 0x05, 0x10, 0x09, 0x3A, 0x78, 0x4D, 0x05, 0x18, 0x0D, 0x38, 0x3A, 0x1F}, 15},
+	{0XE1, {0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F}, 15},
 	/* Column address set, SC=0, EC=0xEF */
 	{0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},
 	/* Page address set, SP=0, EP=0x013F */
-	{0x2B, {0x00, 0x00, 0x01, 0x3f}, 4},
+	{0x2B, {0x00, 0x00, 0x00, 0x3f}, 4},
 	/* Memory write */
 	{0x2C, {0}, 0},
 	/* Entry mode set, Low vol detect disabled, normal display */
 	{0xB7, {0x07}, 1},
 	/* Display function control */
-	{0xB6, {0x0A, 0x82, 0x27, 0x00}, 4},
+	{0xB6, {0x0A, 0x82}, 2},
 	/* Sleep out */
+	
 	{0x11, {0}, 0x80},
 	/* Display on */
 	{0x29, {0}, 0x80},
@@ -209,22 +212,29 @@ static void lcd_init_display(spi_device_handle_t spi) {
 	const lcd_init_cmd_t* lcd_init_cmds;
 
 	//Initialize non-SPI GPIOs
-	gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_NUM_BCKL, GPIO_MODE_OUTPUT);
-
+	gpio_config_t bconfig={
+		.pin_bit_mask=(1 << PIN_NUM_BCKL)|(1 << PIN_NUM_DC),
+		.mode=GPIO_MODE_OUTPUT,
+		.pull_up_en=0,
+		.pull_down_en=0,
+	};
+	gpio_config(&bconfig);
+	//gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
+	//gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
+	//gpio_set_direction(PIN_NUM_BCKL, GPIO_MODE_OUTPUT);
+	//(PIN_NUM_BCKL, 1);
 	//Reset the display
-	gpio_set_level(PIN_NUM_RST, 0);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
-	gpio_set_level(PIN_NUM_RST, 1);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
+	//gpio_set_level(PIN_NUM_RST, 0);
+	//vTaskDelay(100 / portTICK_PERIOD_MS);
+	//gpio_set_level(PIN_NUM_RST, 1);
+	//vTaskDelay(100 / portTICK_PERIOD_MS);
 
 	//detect LCD type
 	uint32_t lcd_id = lcd_get_id(spi);
 	int lcd_detected_type = 0;
 	int lcd_type;
 
-	printf("LCD ID: %08X\n", lcd_id);
+	printf("LCD ID: %lu\n", lcd_id);
 	if ( lcd_id == 0 ) {
 		//zero, ili
 		lcd_detected_type = LCD_TYPE_ILI;
@@ -253,9 +263,14 @@ static void lcd_init_display(spi_device_handle_t spi) {
 		}
 		cmd++;
 	}
-
+	//gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
+	//gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
+	//gpio_set_direction(PIN_NUM_BCKL,  GPIO_MODE_OUTPUT);
+	gpio_set_level(PIN_NUM_BCKL, 1);
+	
 	///Enable backlight
-	gpio_set_level(PIN_NUM_BCKL, 0);
+	
+	
 }
 
 
@@ -346,7 +361,8 @@ static void lcd_task(void *args) {
 		.sclk_io_num=PIN_NUM_CLK,
 		.quadwp_io_num=-1,
 		.quadhd_io_num=-1,
-		.max_transfer_sz=PARALLEL_LINES*320*2+8
+		.max_transfer_sz=PARALLEL_LINES*320*2+8,
+		.flags = SPICOMMON_BUSFLAG_MASTER
 	};
 	spi_device_interface_config_t devcfg={
 		.clock_speed_hz=40*1000*1000,			//Clock out at 40 MHz
